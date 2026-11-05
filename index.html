@@ -134,15 +134,12 @@
   .slide img{max-width:100%;max-height:100%;object-fit:contain;display:block}
   .cap{margin-top:14px;font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(17px,4.6vw,21px);min-height:30px;color:#fbf3e3}
   .nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;
-    background:rgba(7,11,31,.65);color:var(--gold);font-size:22px;backdrop-filter:blur(4px);transition:all .2s}
-  .nav:disabled{opacity:.2;cursor:not-allowed}
+    background:rgba(7,11,31,.65);color:var(--gold);font-size:22px;backdrop-filter:blur(4px)}
   .nav.prev{left:8px}.nav.next{right:8px}
   .dots{display:flex;gap:8px;justify-content:center;margin-top:12px}
   .dots i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.25);transition:all .3s}
   .dots i.on{background:var(--gold);width:24px;border-radius:6px}
-  
-  /* Next to End button (revealed only on 3rd photo) */
-  #toEndBtn{margin-top:26px;max-width:280px;display:none;opacity:0;animation:rise .8s ease forwards}
+  #toEndBtn{margin-top:26px;max-width:280px}
 
   /* ---------- THE END SCREEN ---------- */
   #endScreen{justify-content:center;padding:40px 20px}
@@ -242,12 +239,11 @@
   <h2 class="g-title">Moments worth keeping ✨</h2>
   <div class="slider">
     <div class="viewport"><div class="track" id="track"></div></div>
-    <button class="nav prev" id="prev" aria-label="Previous photo">‹</button>
-    <button class="nav next" id="next" aria-label="Next photo">›</button>
+    <button class="nav prev" id="prev" aria-label="Previous">‹</button>
+    <button class="nav next" id="next" aria-label="Next">›</button>
   </div>
   <div class="cap" id="cap"></div>
   <div class="dots" id="dots"></div>
-  <!-- Only revealed on 3rd pic -->
   <button class="btn" id="toEndBtn">Next ✨</button>
 </section>
 
@@ -265,14 +261,12 @@
 </section>
 
 <script>
-/* ================= SETTINGS ================= */
-const PASSWORD = "061107";[cite: 2]
-
-// Target: Midnight November 6, 2026 IST (month index 10 = November)
-const TARGET = new Date(2026, 10, 6, 0, 0, 0).getTime();
-
-// Master password: opens the surprise at any time (for testing)
-const MASTER = "181818";[cite: 2]
+/* ================= SETTINGS (edit here) ================= */
+const PASSWORD = "061107";
+// Birthday starts at 00:00 on 6 Nov 2026, India time (IST = UTC+05:30)
+const TARGET = Date.parse("2026-11-06T00:00:00+05:30");
+// Master password: opens the surprise at any time (for testing). Set to "" to disable it.
+const MASTER = "181818";
 
 const HINTS = [
   "It's six digits, no letters.",
@@ -284,15 +278,15 @@ const HINTS = [
   "The middle two digits are the month, the eleventh of twelve.",
   "Read it out loud as: zero six, eleven, zero seven.",
   "Tomorrow's date, then the month, then the year you were born."
-];[cite: 2]
-
+];
 const PLAYFUL = [
   "So close... but not yet 😉",
   "Not yet, birthday boy 😄",
   "Patience, the stars are still getting ready ✨",
   "Close, but the clock says wait."
-];[cite: 2]
+];
 
+// Personal words & thoughts about him
 const ABOUT_YOU = [
   "You're not just someone I call my brother; you're the one person who always brings grounded honesty and calm everywhere you go.",
   "Your dedication, your quiet discipline, and the genuine way you lift the spirits of people around you is truly something to admire.",
@@ -306,177 +300,164 @@ const PHOTOS = [
   {src:"photos/photo1.jpg", cap:"That smile never gets old 😄"},
   {src:"photos/photo2.jpg", cap:"Cool as ever 😎"},
   {src:"photos/photo3.jpg", cap:"Free like the waves 🌊"}
-];[cite: 2]
-/* ============================================= */
+];
+/* ========================================================== */
 
-const $ = id => document.getElementById(id);[cite: 2]
-const pad = n => String(n).padStart(2,"0");[cite: 2]
-let unlocked = false, attempts = 0, born = false;[cite: 2]
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,"0");
+let unlocked = false, attempts = 0, born = false;
 
 /* ---------- starry sky ---------- */
-const sc = $("stars"), sx = sc.getContext("2d");[cite: 2]
-let stars = [], shoot = null;[cite: 2]
+const sc = $("stars"), sx = sc.getContext("2d");
+let stars = [], shoot = null;
 function sizeStars(){
-  sc.width = innerWidth; sc.height = innerHeight;[cite: 2]
+  sc.width = innerWidth; sc.height = innerHeight;
   stars = Array.from({length: Math.min(160, Math.floor(innerWidth*innerHeight/6000))}, () => ({
     x:Math.random()*sc.width, y:Math.random()*sc.height, r:Math.random()*1.4+.3, p:Math.random()*6.28, v:.01+Math.random()*.03
-  }));[cite: 2]
+  }));
 }
 function drawStars(){
-  sx.clearRect(0,0,sc.width,sc.height);[cite: 2]
+  sx.clearRect(0,0,sc.width,sc.height);
   for(const s of stars){
-    s.p += s.v;[cite: 2]
-    sx.globalAlpha = .35 + .65*Math.abs(Math.sin(s.p));[cite: 2]
-    sx.fillStyle = "#fff";[cite: 2]
-    sx.beginPath(); sx.arc(s.x,s.y,s.r,0,6.283); sx.fill();[cite: 2]
+    s.p += s.v;
+    sx.globalAlpha = .35 + .65*Math.abs(Math.sin(s.p));
+    sx.fillStyle = "#fff";
+    sx.beginPath(); sx.arc(s.x,s.y,s.r,0,6.283); sx.fill();
   }
-  if(!shoot && Math.random()<.004) shoot = {x:Math.random()*sc.width*.7, y:Math.random()*sc.height*.4, l:0};[cite: 2]
+  if(!shoot && Math.random()<.004) shoot = {x:Math.random()*sc.width*.7, y:Math.random()*sc.height*.4, l:0};
   if(shoot){
-    shoot.l += 14; shoot.x += 9; shoot.y += 5;[cite: 2]
-    const g = sx.createLinearGradient(shoot.x,shoot.y,shoot.x-shoot.l,shoot.y-shoot.l*.55);[cite: 2]
-    g.addColorStop(0,"rgba(255,235,180,.9)"); g.addColorStop(1,"rgba(255,235,180,0)");[cite: 2]
-    sx.globalAlpha = 1; sx.strokeStyle = g; sx.lineWidth = 2;[cite: 2]
-    sx.beginPath(); sx.moveTo(shoot.x,shoot.y); sx.lineTo(shoot.x-shoot.l,shoot.y-shoot.l*.55); sx.stroke();[cite: 2]
-    if(shoot.x > sc.width+100 || shoot.l > 160) shoot = null;[cite: 2]
+    shoot.l += 14; shoot.x += 9; shoot.y += 5;
+    const g = sx.createLinearGradient(shoot.x,shoot.y,shoot.x-shoot.l,shoot.y-shoot.l*.55);
+    g.addColorStop(0,"rgba(255,235,180,.9)"); g.addColorStop(1,"rgba(255,235,180,0)");
+    sx.globalAlpha = 1; sx.strokeStyle = g; sx.lineWidth = 2;
+    sx.beginPath(); sx.moveTo(shoot.x,shoot.y); sx.lineTo(shoot.x-shoot.l,shoot.y-shoot.l*.55); sx.stroke();
+    if(shoot.x > sc.width+100 || shoot.l > 160) shoot = null;
   }
-  requestAnimationFrame(drawStars);[cite: 2]
+  requestAnimationFrame(drawStars);
 }
-addEventListener("resize", sizeStars); sizeStars(); drawStars();[cite: 2]
+addEventListener("resize", sizeStars); sizeStars(); drawStars();
 
 /* ---------- confetti ---------- */
-const cc = $("confetti"), cx = cc.getContext("2d");[cite: 2]
-let bits = [], confettiOn = false;[cite: 2]
-function sizeConf(){ cc.width = innerWidth; cc.height = innerHeight; }[cite: 2]
-addEventListener("resize", sizeConf); sizeConf();[cite: 2]
+const cc = $("confetti"), cx = cc.getContext("2d");
+let bits = [], confettiOn = false;
+function sizeConf(){ cc.width = innerWidth; cc.height = innerHeight; }
+addEventListener("resize", sizeConf); sizeConf();
 function burst(n=160){
-  const cols = ["#ffd98a","#ffb347","#ff8fa3","#8fd3ff","#c9a7ff","#ffffff"];[cite: 2]
+  const cols = ["#ffd98a","#ffb347","#ff8fa3","#8fd3ff","#c9a7ff","#ffffff"];
   for(let i=0;i<n;i++){
     bits.push({x:innerWidth/2,y:innerHeight*.35,vx:(Math.random()-.5)*16,vy:-Math.random()*14-3,
-      w:6+Math.random()*6,h:4+Math.random()*6,c:cols[i%cols.length],r:Math.random()*6.28,vr:(Math.random()-.5)*.4,life:0});[cite: 2]
+      w:6+Math.random()*6,h:4+Math.random()*6,c:cols[i%cols.length],r:Math.random()*6.28,vr:(Math.random()-.5)*.4,life:0});
   }
-  if(!confettiOn){ confettiOn = true; stepConf(); }[cite: 2]
+  if(!confettiOn){ confettiOn = true; stepConf(); }
 }
 function stepConf(){
-  cx.clearRect(0,0,cc.width,cc.height);[cite: 2]
-  bits = bits.filter(b => b.y < cc.height+30 && b.life < 400);[cite: 2]
+  cx.clearRect(0,0,cc.width,cc.height);
+  bits = bits.filter(b => b.y < cc.height+30 && b.life < 400);
   for(const b of bits){
-    b.vy += .22; b.vx *= .99; b.x += b.vx; b.y += b.vy; b.r += b.vr; b.life++;[cite: 2]
-    cx.save(); cx.translate(b.x,b.y); cx.rotate(b.r); cx.fillStyle = b.c; cx.fillRect(-b.w/2,-b.h/2,b.w,b.h); cx.restore();[cite: 2]
+    b.vy += .22; b.vx *= .99; b.x += b.vx; b.y += b.vy; b.r += b.vr; b.life++;
+    cx.save(); cx.translate(b.x,b.y); cx.rotate(b.r); cx.fillStyle = b.c; cx.fillRect(-b.w/2,-b.h/2,b.w,b.h); cx.restore();
   }
-  if(bits.length) requestAnimationFrame(stepConf); else { confettiOn = false; cx.clearRect(0,0,cc.width,cc.height); }[cite: 2]
+  if(bits.length) requestAnimationFrame(stepConf); else { confettiOn = false; cx.clearRect(0,0,cc.width,cc.height); }
 }
 
 /* ---------- toast ---------- */
-let tt;[cite: 2]
-function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),3200); }[cite: 2]
+let tt;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),3200); }
 
 /* ---------- countdown ---------- */
 function tick(){
-  const now = Date.now();
-  const diff = TARGET - now;
-  
+  const diff = TARGET - Date.now();
   if(diff <= 0){
     if(!born){
-      born = true;[cite: 2]
-      $("h").textContent = "00";
-      $("m").textContent = "00";
-      $("s").textContent = "00";
-      $("timer").classList.add("hidden"); [cite: 2]
-      $("mins").classList.add("hidden");[cite: 2]
-      $("bdayTitle").classList.remove("hidden");[cite: 2]
-      $("try").textContent = "";[cite: 2]
-      if(!unlocked){ $("err").textContent = ""; burst(120); }[cite: 2]
+      born = true;
+      $("timer").classList.add("hidden"); $("mins").classList.add("hidden");
+      $("bdayTitle").classList.remove("hidden");
+      $("try").textContent = "";
+      if(!unlocked){ $("err").textContent = ""; burst(120); }
     }
     return;
   }
-
-  const secs = Math.floor(diff / 1000);
-  const hours = Math.floor(secs / 3600);
-  const minutes = Math.floor((secs % 3600) / 60);
-  const seconds = secs % 60;
-
-  $("h").textContent = pad(hours);
-  $("m").textContent = pad(minutes);
-  $("s").textContent = pad(seconds);
-
-  const mm = Math.ceil(diff / 60000);
-  $("mins").innerHTML = "That's <strong>" + mm.toLocaleString("en-IN") + "</strong> minute" + (mm === 1 ? "" : "s") + " to go";
+  const secs = Math.floor(diff/1000);
+  $("h").textContent = pad(Math.floor(secs/3600));
+  $("m").textContent = pad(Math.floor(secs%3600/60));
+  $("s").textContent = pad(secs%60);
+  const mm = Math.ceil(diff/60000);
+  $("mins").innerHTML = "That's <strong>" + mm.toLocaleString("en-IN") + "</strong> minute" + (mm===1?"":"s") + " to go";
 }
-setInterval(tick, 1000); 
-tick();
+setInterval(tick, 250); tick();
 
 /* ---------- password ---------- */
-$("eye").onclick = () => { const p=$("pw"); const show=p.type==="password"; p.type=show?"text":"password"; $("eye").textContent=show?"🙈":"👁"; };[cite: 2]
+$("eye").onclick = () => { const p=$("pw"); const show=p.type==="password"; p.type=show?"text":"password"; $("eye").textContent=show?"🙈":"👁"; };
 $("form").addEventListener("submit", e => {
-  e.preventDefault();[cite: 2]
-  const v = $("pw").value.trim();[cite: 2]
-  if((born && v === PASSWORD) || (MASTER && v === MASTER)){ return unlock(); }[cite: 2]
-  attempts++;[cite: 2]
-  $("err").textContent = "Incorrect password";[cite: 2]
-  $("try").textContent = born ? "" : "Try again when the countdown reaches zero.";[cite: 2]
-  const box = $("pw").parentElement; box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");[cite: 2]
-  const hint = $("hint"); hint.style.display = "block";[cite: 2]
-  const i = attempts - 1;[cite: 2]
-  const text = i < HINTS.length ? HINTS[i] : PLAYFUL[(i - HINTS.length) % PLAYFUL.length];[cite: 2]
-  hint.innerHTML = i < HINTS.length ? "<small>Hint " + (i+1) + " of " + HINTS.length + "</small>" + text : text;[cite: 2]
-  hint.style.animation = "none"; void hint.offsetWidth; hint.style.animation = "";[cite: 2]
-  $("pw").value = ""; $("pw").focus();[cite: 2]
+  e.preventDefault();
+  const v = $("pw").value.trim();
+  if((born && v === PASSWORD) || (MASTER && v === MASTER)){ return unlock(); }
+  attempts++;
+  $("err").textContent = "Incorrect password";
+  $("try").textContent = born ? "" : "Try again when the countdown reaches zero.";
+  const box = $("pw").parentElement; box.classList.remove("shake"); void box.offsetWidth; box.classList.add("shake");
+  const hint = $("hint"); hint.style.display = "block";
+  const i = attempts - 1;
+  const text = i < HINTS.length ? HINTS[i] : PLAYFUL[(i - HINTS.length) % PLAYFUL.length];
+  hint.innerHTML = i < HINTS.length ? "<small>Hint " + (i+1) + " of " + HINTS.length + "</small>" + text : text;
+  hint.style.animation = "none"; void hint.offsetWidth; hint.style.animation = "";
+  $("pw").value = ""; $("pw").focus();
 });
 
 /* ---------- guard ---------- */
 addEventListener("beforeunload", e => {
-  if(!unlocked && Date.now() < TARGET){ e.preventDefault(); e.returnValue = "Try again when the countdown reaches zero."; return e.returnValue; }[cite: 2]
+  if(!unlocked && Date.now() < TARGET){ e.preventDefault(); e.returnValue = "Try again when the countdown reaches zero."; return e.returnValue; }
 });
-history.pushState({k:1}, "");[cite: 2]
+history.pushState({k:1}, "");
 addEventListener("popstate", () => {
-  if(!unlocked && Date.now() < TARGET){ history.pushState({k:1}, ""); toast("Try again when the countdown reaches zero ⏳"); }[cite: 2]
+  if(!unlocked && Date.now() < TARGET){ history.pushState({k:1}, ""); toast("Try again when the countdown reaches zero ⏳"); }
 });
 
 /* ---------- music box ---------- */
-let ac, master, muted = false, loopTimer;[cite: 2]
-const N = {G4:392,A4:440,B4:493.88,C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,C4:261.63,F4:349.23,E4:329.63,D4:293.66};[cite: 2]
+let ac, master, muted = false, loopTimer;
+const N = {G4:392,A4:440,B4:493.88,C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,C4:261.63,F4:349.23,E4:329.63,D4:293.66};
 const SONG = [
   ["G4",.75],["G4",.25],["A4",1],["G4",1],["C5",1],["B4",2],
   ["G4",.75],["G4",.25],["A4",1],["G4",1],["D5",1],["C5",2],
   ["G4",.75],["G4",.25],["G5",1],["E5",1],["C5",1],["B4",1],["A4",2],
   ["F5",.75],["F5",.25],["E5",1],["C5",1],["D5",1],["C5",3]
-];[cite: 2]
+];
 function note(freq, t, dur, vol){
   [[1,1],[2,.28],[3,.1]].forEach(([mult,amp]) => {
-    const o = ac.createOscillator(), g = ac.createGain();[cite: 2]
-    o.type = "sine"; o.frequency.value = freq*mult;[cite: 2]
-    g.gain.setValueAtTime(0,t);[cite: 2]
-    g.gain.linearRampToValueAtTime(vol*amp,t+.01);[cite: 2]
-    g.exponentialRampToValueAtTime ? g.gain.exponentialRampToValueAtTime(.0001,t+Math.max(dur,.5)+.9) : null;
-    o.connect(g); g.connect(master); o.start(t); o.stop(t+Math.max(dur,.5)+1);[cite: 2]
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = "sine"; o.frequency.value = freq*mult;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol*amp,t+.01);
+    g.gain.exponentialRampToValueAtTime(.0001,t+Math.max(dur,.5)+.9);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t+Math.max(dur,.5)+1);
   });
 }
 function playSong(){
-  const beat = .62; let t = ac.currentTime + .15;[cite: 2]
-  SONG.forEach(([n,b]) => { note(N[n], t, b*beat, .22); t += b*beat; });[cite: 2]
-  const chords = [[0,["C4","E4"]],[6,["C4","E4"]],[12,["C4","E4"]],[19,["F4","C5"]]];[cite: 2]
-  let tb = ac.currentTime + .15;[cite: 2]
-  [0,6,12,19].forEach((bt,i)=>{ const ch = chords[i][1]; ch.forEach(n => note(N[n]/ (n==="C5"?2:1), tb + bt*beat*1.0, 2, .05)); });[cite: 2]
-  const total = SONG.reduce((a,[,b])=>a+b,0)*beat;[cite: 2]
-  loopTimer = setTimeout(playSong, (total + 2.5)*1000);[cite: 2]
+  const beat = .62; let t = ac.currentTime + .15;
+  SONG.forEach(([n,b]) => { note(N[n], t, b*beat, .22); t += b*beat; });
+  const chords = [[0,["C4","E4"]],[6,["C4","E4"]],[12,["C4","E4"]],[19,["F4","C5"]]];
+  let tb = ac.currentTime + .15;
+  [0,6,12,19].forEach((bt,i)=>{ const ch = chords[i][1]; ch.forEach(n => note(N[n]/ (n==="C5"?2:1), tb + bt*beat*1.0, 2, .05)); });
+  const total = SONG.reduce((a,[,b])=>a+b,0)*beat;
+  loopTimer = setTimeout(playSong, (total + 2.5)*1000);
 }
 function startMusic(){
   try{
-    ac = new (window.AudioContext || window.webkitAudioContext)();[cite: 2]
-    master = ac.createGain(); master.gain.value = .9;[cite: 2]
-    const dly = ac.createDelay(); dly.delayTime.value = .32;[cite: 2]
-    const fb = ac.createGain(); fb.gain.value = .35;[cite: 2]
-    const wet = ac.createGain(); wet.gain.value = .35;[cite: 2]
-    master.connect(ac.destination); master.connect(dly); dly.connect(fb); fb.connect(dly); dly.connect(wet); wet.connect(ac.destination);[cite: 2]
-    if(ac.state === "suspended") ac.resume();[cite: 2]
-    playSong();[cite: 2]
-    $("mute").style.display = "block";[cite: 2]
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = .9;
+    const dly = ac.createDelay(); dly.delayTime.value = .32;
+    const fb = ac.createGain(); fb.gain.value = .35;
+    const wet = ac.createGain(); wet.gain.value = .35;
+    master.connect(ac.destination); master.connect(dly); dly.connect(fb); fb.connect(dly); dly.connect(wet); wet.connect(ac.destination);
+    if(ac.state === "suspended") ac.resume();
+    playSong();
+    $("mute").style.display = "block";
   }catch(e){}
 }
 $("mute").onclick = () => {
-  muted = !muted;[cite: 2]
-  master.gain.setTargetAtTime(muted ? 0 : .9, ac.currentTime, .05);[cite: 2]
-  $("mute").textContent = muted ? "🔇" : "🔊";[cite: 2]
+  muted = !muted;
+  master.gain.setTargetAtTime(muted ? 0 : .9, ac.currentTime, .05);
+  $("mute").textContent = muted ? "🔇" : "🔊";
 };
 
 /* ---------- quotes / about you pagination ---------- */
@@ -525,27 +506,27 @@ prevBtn.onclick = () => {
 
 /* ---------- navigation & screens ---------- */
 function show(id){
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));[cite: 2]
-  $(id).classList.add("active"); scrollTo(0,0);[cite: 2]
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  $(id).classList.add("active"); scrollTo(0,0);
 }
 
 function unlock(){
-  unlocked = true;[cite: 2]
-  startMusic();[cite: 2]
-  burst(220); setTimeout(()=>burst(140), 700);[cite: 2]
+  unlocked = true;
+  startMusic();
+  burst(220); setTimeout(()=>burst(140), 700);
   
-  const L = $("lights"); L.classList.add("on");[cite: 2]
+  const L = $("lights"); L.classList.add("on");
   for(let i=0;i<22;i++){
-    const d = document.createElement("i");[cite: 2]
-    d.style.left = Math.random()*100 + "%";[cite: 2]
-    d.style.animationDuration = (9+Math.random()*10) + "s";[cite: 2]
-    d.style.animationDelay = (-Math.random()*14) + "s";[cite: 2]
-    d.style.setProperty("--dx", (Math.random()*80-40) + "px");[cite: 2]
-    const s = .6 + Math.random()*.9; d.style.transform = "scale(" + s + ")";[cite: 2]
-    L.appendChild(d);[cite: 2]
+    const d = document.createElement("i");
+    d.style.left = Math.random()*100 + "%";
+    d.style.animationDuration = (9+Math.random()*10) + "s";
+    d.style.animationDelay = (-Math.random()*14) + "s";
+    d.style.setProperty("--dx", (Math.random()*80-40) + "px");
+    const s = .6 + Math.random()*.9; d.style.transform = "scale(" + s + ")";
+    L.appendChild(d);
   }
   
-  show("wish");[cite: 2]
+  show("wish");
 }
 
 $("toQuotesBtn").onclick = () => {
@@ -555,55 +536,30 @@ $("toQuotesBtn").onclick = () => {
   burst(90);
 };
 
-/* ---------- gallery (goes through all 3 pics first) ---------- */
-let idx = 0, startX = null;[cite: 2]
-const track = $("track");[cite: 2]
+/* ---------- gallery ---------- */
+let idx = 0, startX = null;
+const track = $("track");
 PHOTOS.forEach((p,i) => {
-  const s = document.createElement("div"); s.className = "slide";[cite: 2]
-  const im = new Image(); im.src = p.src; im.alt = "Memory " + (i+1); im.loading = "lazy"; s.appendChild(im); track.appendChild(s);[cite: 2]
-  const d = document.createElement("i"); $("dots").appendChild(d);[cite: 2]
+  const s = document.createElement("div"); s.className = "slide";
+  const im = new Image(); im.src = p.src; im.alt = "Memory " + (i+1); im.loading = "lazy"; s.appendChild(im); track.appendChild(s);
+  const d = document.createElement("i"); $("dots").appendChild(d);
 });
-
-function updateGalleryView(n){
-  idx = Math.max(0, Math.min(n, PHOTOS.length - 1));
-  track.style.transform = "translateX(" + (-100 * idx) + "%)";[cite: 2]
-  $("cap").textContent = PHOTOS[idx].cap;[cite: 2]
-  [...$("dots").children].forEach((d,i) => d.classList.toggle("on", i === idx));[cite: 2]
-  
-  $("prev").disabled = (idx === 0);
-  $("next").disabled = (idx === PHOTOS.length - 1);
-
-  // Next button is revealed only on the 3rd picture
-  const toEndBtn = $("toEndBtn");
-  if(idx === PHOTOS.length - 1){
-    if(toEndBtn.style.display !== "block"){
-      toEndBtn.style.display = "block";
-      burst(80);
-    }
-  } else {
-    toEndBtn.style.display = "none";
-  }
+function go(n){
+  idx = (n + PHOTOS.length) % PHOTOS.length;
+  track.style.transform = "translateX(" + (-100*idx) + "%)";
+  $("cap").textContent = PHOTOS[idx].cap;
+  [...$("dots").children].forEach((d,i) => d.classList.toggle("on", i===idx));
 }
-
-$("prev").onclick = () => { if(idx > 0) updateGalleryView(idx - 1); };
-$("next").onclick = () => { if(idx < PHOTOS.length - 1) updateGalleryView(idx + 1); };
-
-track.addEventListener("touchstart", e => { startX = e.touches[0].clientX; }, {passive:true});[cite: 2]
+$("prev").onclick = () => go(idx-1);
+$("next").onclick = () => go(idx+1);
+track.addEventListener("touchstart", e => { startX = e.touches[0].clientX; }, {passive:true});
 track.addEventListener("touchend", e => {
-  if(startX === null) return;[cite: 2]
-  const dx = e.changedTouches[0].clientX - startX;[cite: 2]
-  if(Math.abs(dx) > 40){
-    if(dx < 0 && idx < PHOTOS.length - 1) updateGalleryView(idx + 1);
-    else if(dx > 0 && idx > 0) updateGalleryView(idx - 1);
-  }
-  startX = null;[cite: 2]
+  if(startX === null) return;
+  const dx = e.changedTouches[0].clientX - startX;
+  if(Math.abs(dx) > 40) go(idx + (dx < 0 ? 1 : -1));
+  startX = null;
 });
-
-$("openPics").onclick = () => { 
-  show("gallery");[cite: 2]
-  updateGalleryView(0); 
-  burst(80);[cite: 2]
-};
+$("openPics").onclick = () => { show("gallery"); go(0); burst(80); };
 
 /* ---------- to The End Screen ---------- */
 $("toEndBtn").onclick = () => {
